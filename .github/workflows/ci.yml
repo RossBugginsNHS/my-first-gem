@@ -42,7 +42,8 @@ jobs:
       - name: Set up Ruby
         uses: ruby/setup-ruby@v1.180.1
         with:
-          bundler-cache: true
+          bundler-cache: false
           ruby-version: head
+      - run: bundle install
       - name: Run style checks
         run: bundle exec rubocop
