@@ -30,16 +30,13 @@ jobs:
           printf -- "---\n:github: ${GEM_HOST_API_KEY}\n" > $HOME/.gem/credentials
           gem build *.gemspec
           gem push --KEY github --host https://rubygems.pkg.github.com/${OWNER} *.gem
-          
           echo "gem_version=$gem_version" >> $GITHUB_OUTPUT
-
           if git fetch origin "refs/tags/v$gem_version" >/dev/null 2>&1
           then
             echo "Tag 'v$gem_version' already exists"
             echo "new_version=false" >> $GITHUB_OUTPUT
           else
-            echo "new_version=true" >> $GITHUB_OUTPUT
-                      
+            echo "new_version=true" >> $GITHUB_OUTPUT               
         env:
           GEM_HOST_API_KEY: "Bearer ${{secrets.GITHUB_TOKEN}}"
           OWNER: ${{ github.repository_owner }}
