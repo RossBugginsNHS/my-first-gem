@@ -11,7 +11,6 @@ jobs:
     strategy:
       matrix:
         ruby:
-          - 2.7
           # Due to https://github.com/actions/runner/issues/849, we have to use quotes for '3.0'
           - '3.0'
           - 3.1
@@ -24,7 +23,7 @@ jobs:
       # This is an action from the public marketplace. We reference a specific commit as a security measure,
       # but there are many ways to reference an action:
       # https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#example-using-versioned-actions
-      - uses: actions/checkout@8230315d06ad95c617244d2f265d237a1682d445
+      - uses: actions/checkout@v4.1.7
       - name: Set up Ruby ${{ matrix.ruby }}
         uses: ruby/setup-ruby@v1.180.1
         with:
@@ -39,7 +38,7 @@ jobs:
     runs-on: ubuntu-latest
     name: Rubocop
     steps:
-      - uses: actions/checkout@8230315d06ad95c617244d2f265d237a1682d445
+      - uses: actions/checkout@v4.1.7
       - name: Set up Ruby
         uses: ruby/setup-ruby@v1.180.1
         with:
