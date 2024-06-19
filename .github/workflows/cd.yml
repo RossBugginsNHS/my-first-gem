@@ -38,15 +38,25 @@ jobs:
             echo "new_version=false" >> $GITHUB_OUTPUT
           else
             echo "new_version=true" >> $GITHUB_OUTPUT 
-          fi        
+          fi     
+          sub="pre"
+          if [[ "$gem_version" == *"$sub"* ]]; then
+            echo "pre_release=true" >> $GITHUB_OUTPUT
+          else
+            echo "pre_release=false" >> $GITHUB_OUTPUT
+          fi
         env:
           GEM_HOST_API_KEY: "Bearer ${{secrets.GITHUB_TOKEN}}"
           OWNER: ${{ github.repository_owner }}
+
       - name: Create GitHub Release
-        # This creates a new release at https://github.com/rubyatscale/alexevanczuk-example-gem/releases,
-        # which serves as an automatically generated changelog.
         run: gh release create v${{steps.tag-and-push-gem.outputs.gem_version}} --generate-notes
-        # We only create a release if the previous step has published a new version.
-        if: ${{ steps.tag-and-push-gem.outputs.new_version == 'true' }}
+        if: ${{ steps.tag-and-push-gem.outputs.new_version == 'true' && steps.tag-and-push-gem.outputs.pre_release == 'false'  }}
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Create GitHub Pre Release
+        run: gh release create v${{steps.tag-and-push-gem.outputs.gem_version}} --generate-notes --prerelease
+        if: ${{ steps.tag-and-push-gem.outputs.new_version == 'true' && steps.tag-and-push-gem.outputs.pre_release == 'true' }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}          
