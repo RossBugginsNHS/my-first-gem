@@ -1,0 +1,35 @@
+name: CD
+
+on:
+  # This ensures we only run CD after the CI workflow has completed on the main branch.
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
+    branches: [main]
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    # We only want to run this if CI completes *sucessfully*, see more here:
+    # https://docs.github.com/en/actions/using-workflows/events-that-trigger-workflows#running-a-workflow-based-on-the-conclusion-of-another-workflow
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    steps: 
+      - uses: actions/checkout@8230315d06ad95c617244d2f265d237a1682d445
+      - name: Publish to GPR
+        run: |
+          mkdir -p $HOME/.gem
+          touch $HOME/.gem/credentials
+          chmod 0600 $HOME/.gem/credentials
+          printf -- "---\n:github: ${GEM_HOST_API_KEY}\n" > $HOME/.gem/credentials
+          gem build *.gemspec
+          gem push --KEY github --host https://rubygems.pkg.github.com/${OWNER} *.gem
+        env:
+          GEM_HOST_API_KEY: "Bearer ${{secrets.GITHUB_TOKEN}}"
+          OWNER: ${{ github.repository_owner }}
+      - name: Create GitHub Release
+        # This creates a new release at https://github.com/rubyatscale/alexevanczuk-example-gem/releases,
+        # which serves as an automatically generated changelog.
+        run: gh release create v${{steps.publish-to-gpr.gem_version}} --generate-notes
+        # We only create a release if the previous step has published a new version.
+        if: ${{ steps.publish-to-gpr.new_version == 'true' }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
