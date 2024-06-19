@@ -3,7 +3,7 @@
 module My
   module First
     module Gem
-      VERSION = '0.1.8-alpha.1'
+      VERSION = '0.1.8-alpha.2'
     end
   end
 end
