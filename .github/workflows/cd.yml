@@ -9,6 +9,13 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      packages: write
+      attestations: write
+      id-token: write
+      
     # We only want to run this if CI completes *sucessfully*, see more here:
     # https://docs.github.com/en/actions/using-workflows/events-that-trigger-workflows#running-a-workflow-based-on-the-conclusion-of-another-workflow
     if: ${{ github.event.workflow_run.conclusion == 'success' }}
