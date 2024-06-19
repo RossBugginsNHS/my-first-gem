@@ -15,13 +15,14 @@ jobs:
       packages: write
       attestations: write
       id-token: write
-      
+
     # We only want to run this if CI completes *sucessfully*, see more here:
     # https://docs.github.com/en/actions/using-workflows/events-that-trigger-workflows#running-a-workflow-based-on-the-conclusion-of-another-workflow
     if: ${{ github.event.workflow_run.conclusion == 'success' }}
     steps: 
       - uses: actions/checkout@v4.1.7
       - name: Publish to GPR
+        id: tag-and-push-gem
         run: |
           mkdir -p $HOME/.gem
           touch $HOME/.gem/credentials
@@ -29,14 +30,25 @@ jobs:
           printf -- "---\n:github: ${GEM_HOST_API_KEY}\n" > $HOME/.gem/credentials
           gem build *.gemspec
           gem push --KEY github --host https://rubygems.pkg.github.com/${OWNER} *.gem
+
+          gem push --KEY github --host https://rubygems.pkg.github.com/${OWNER} *.gem
+          echo "gem_version=$gem_version" >> $GITHUB_OUTPUT
+
+          if git fetch origin "refs/tags/v$gem_version" >/dev/null 2>&1
+          then
+            echo "Tag 'v$gem_version' already exists"
+            echo "new_version=false" >> $GITHUB_OUTPUT
+          else
+            echo "new_version=true" >> $GITHUB_OUTPUT
+                      
         env:
           GEM_HOST_API_KEY: "Bearer ${{secrets.GITHUB_TOKEN}}"
           OWNER: ${{ github.repository_owner }}
       - name: Create GitHub Release
         # This creates a new release at https://github.com/rubyatscale/alexevanczuk-example-gem/releases,
         # which serves as an automatically generated changelog.
-        run: gh release create v${{steps.publish-to-gpr.gem_version}} --generate-notes
+        run: gh release create v${{steps.tag-and-push-gem.gem_version}} --generate-notes
         # We only create a release if the previous step has published a new version.
-        if: ${{ steps.publish-to-gpr.new_version == 'true' }}
+        if: ${{ steps.tag-and-push-gem.new_version == 'true' }}
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
