@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    my-first-gem (0.1.2)
+    my-first-gem (0.1.8.pre.alpha.2)
 
 GEM
   remote: https://rubygems.org/
